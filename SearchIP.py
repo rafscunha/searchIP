@@ -39,20 +39,63 @@ class SearchIP:
         
         return ''
 
+    def excluirImg(self, text):
+        if text.count('img') > 0:
+            remove = text[text.find("<img"):text.rfind("/>")+2]
+            return text.replace(remove, "")
+            
+        else:
+            return text
+
+    def conversor(self, html):
+        text = str(html).replace('\n', '').replace("</table>", "").replace('\xa0', '').replace('\t', "")
+        pos = text.find('>')
+        text = text[pos+1:]
+
+        linhas = text.split("</tr>")
+        table = []
+        for linha in linhas:
+            linha = linha.replace("<tr>","")
+            line = []
+            if linha.count('td')>0:
+                colunas = linha.split("</td>")
+                for coluna in colunas:
+                    coluna = coluna.replace("<td>", "")
+                    if coluna != '' or coluna == ' N/A (N/A)':
+                        line.append(self.excluirImg(coluna))
+            else:
+                line.append(linha) 
+            if line != '':
+                table.append(line)
+        return table
+    
+    def getDicionarioByCampos(self, vetor, matrix):
+        dicionario = {}
+        for linha in matrix:
+            if len(linha) > 1:
+                if linha[0] in vetor:
+                    dicionario[linha[0]] = linha[1]
+        
+        return dicionario
+        pass
+
+
     def __getInfoIP(self, ip):
         
         content = self.request(ip)
         dicionario = {}
         if content != -1:
             soup = BeautifulSoup(content, 'html.parser')
-            table_1 = soup.find('table', {'class':'center results wide home'}).text.strip()
-            for param in ['ISP', 'ASN']:
-                dicionario[param] = self.getData(table_1, param)
-            
-            table_2 = soup.find('table', {'class':'results wide home'}).text.strip()
-            for param in ['Continent', 'Country', 'State/region', 'City']:
 
-                dicionario[param] = self.getData(table_2, param)
+            html_table = soup.find('table', {'class':'center results wide home'})
+            matrix_table = self.conversor(html_table)       
+            dicionario.update(self.getDicionarioByCampos(['ISP', 'ASN'],matrix_table))
+
+            html_table = soup.find('table', {'class':'results wide home'})
+            #print(html_table)
+            matrix_table = self.conversor(html_table) 
+            #print(matrix_table)
+            dicionario.update(self.getDicionarioByCampos(['Continent', 'Country', 'State/region', 'City'],matrix_table))   
 
             return dicionario
             pass
@@ -87,6 +130,6 @@ class SearchIP:
             return 1
 
 
-#teste = SearchIP()
-#var = teste.get('192.135.185.15:2020')
-#print(var)
+teste = SearchIP()
+var = teste.get('34.98.64.218:2020')
+print(var)
