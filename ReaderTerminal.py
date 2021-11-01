@@ -27,7 +27,7 @@ class ReaderTerminal:
         for pos in param:
             if pos != '':
                 campos.append(self.__removeSpace(pos))
-        print(campos)
+        #print(campos)
         return campos
     
     def __readTerminal(self):
@@ -53,7 +53,7 @@ class ReaderTerminal:
                 aux = [self.enum.rfind(self.campos[index]),self.enum.rfind(self.campos[index+1])]
                 self.positon[campo] =  [aux[0],aux[1], aux[1]-aux[0]]
             index +=1
-        print(self.positon)
+        #print(self.positon)
 
     def __getPosition(self, position):
         tam = len(self.campos)

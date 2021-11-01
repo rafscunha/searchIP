@@ -10,6 +10,9 @@ class SearchIP:
         self.database = Database()
         pass
 
+    def getDatabase(self):
+        return self.database.getDatabase()
+
     def request(self, ip):
         url = 'https://infobyip.com/ip-'+ip+'.html'
         user_agent = {'User-agent': 'Mozilla/5.0'}
@@ -102,7 +105,7 @@ class SearchIP:
         else:
             return -1
 
-    def get(self, ip):
+    def get(self, ip, campo=None):
         #Verificar base de dados
         if ip.count(':') > 0:
             ip = ip.split(':')[0]
@@ -110,17 +113,21 @@ class SearchIP:
             return 'localHost'
 
         database = self.database.search(ip)
-        if database != -1:
-            return database
-        else:
-            newData = self.__getInfoIP(ip)
-            self.database.insert(ip, newData)
-            if self.database.insert(ip, newData):
+        if database == -1:
+            database = self.__getInfoIP(ip)
+            if self.database.insert(ip, database):
                 #print("Novo IP cadastrado com sucesso")
-                time.sleep(1)
+                time.sleep(0.1)
             else:
                 print("Falha ao guardar aquivo")
-            return newData
+            
+        if campo != None:
+            try:
+                return {campo:database[campo]}
+            except:
+                return database
+        else:
+            return database
 
     def validateIP(self, ip):
 
@@ -128,8 +135,9 @@ class SearchIP:
             return 0
         else:
             return 1
+    
 
 
-teste = SearchIP()
-var = teste.get('34.98.64.218:2020')
-print(var)
+#teste = SearchIP()
+#var = teste.get('34.98.64.218:2020')
+#print(var)
